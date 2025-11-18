@@ -43,6 +43,28 @@ const QUESTIONS: Question[] = [
     whyBad:
       "This is bad because there is no context, no code snippet, no error, and no clear task beyond a generic 'fix it'.",
   },
+  {
+    id: 4,
+    title: "Role: math tutor",
+    prompt:
+      "Act as a math tutor for a 12-year-old student. Explain how fractions work using simple language, 3 bullet-point steps, and one concrete example with pizza.",
+    isGood: true,
+    whyGood:
+      "This is good because it sets a role, defines the audience, specifies structure (3 bullet points + example), and asks for simple language.",
+    whyBad:
+      "Calling this bad would ignore that it already provides role, context, format, and tone.",
+  },
+  {
+    id: 5,
+    title: "Analytical table",
+    prompt:
+      "Summarize the main differences between supervised and unsupervised learning in a 4-row table with columns: Concept, Data Needed, Typical Use Cases, and Example.",
+    isGood: true,
+    whyGood:
+      "This is good because it asks for an analytical comparison in a specific table format with clear columns and structure.",
+    whyBad:
+      "This would only be bad if it were vague about the task or format, but it clearly describes both.",
+  },
 ];
 
 type Phase = "intro" | "quiz" | "results";
@@ -55,7 +77,6 @@ type Answer = {
 
 export default function Home() {
   const [phase, setPhase] = useState<Phase>("intro");
-  const [idea, setIdea] = useState("");
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<Answer[]>([]);
 
@@ -119,22 +140,13 @@ export default function Home() {
                 <li>Examples or step-by-step instructions</li>
               </ul>
             </div>
-            <div className="bg-slate-900 text-slate-50 rounded-2xl px-4 py-3 text-xs md:text-sm">
+            <div className="bg-violet-600 text-slate-50 rounded-2xl px-4 py-3 text-xs md:text-sm">
               The clearer your instructions are, the better the AI can stay on-topic and match your style.
             </div>
           </div>
 
           {phase === "intro" && (
             <div className="mt-4">
-              <label className="block text-xs font-semibold tracking-wide text-slate-500 uppercase mb-2">
-                Your prompt idea (optional)
-              </label>
-              <textarea
-                value={idea}
-                onChange={(e) => setIdea(e.target.value)}
-                placeholder="E.g. Explain how AI can help me revise for exams in a friendly way."
-                className="w-full h-24 resize-none rounded-2xl border border-violet-100 bg-violet-50 px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-400"
-              />
               <button
                 onClick={startQuiz}
                 className="mt-4 inline-flex items-center justify-center rounded-full bg-violet-600 px-6 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-violet-700 transition-colors"
