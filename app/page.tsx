@@ -11,7 +11,7 @@ type Question = {
   whyBad: string;
 };
 
-const QUESTIONS: Question[] = [
+const ALL_QUESTIONS: Question[] = [
   {
     id: 1,
     title: "Weak AI prompt",
@@ -65,7 +65,68 @@ const QUESTIONS: Question[] = [
     whyBad:
       "This would only be bad if it were vague about the task or format, but it clearly describes both.",
   },
+  {
+    id: 6,
+    title: "Too short creative prompt",
+    prompt: "Write a story.",
+    isGood: false,
+    whyGood:
+      "A better prompt would set a genre, audience, length, style, and maybe an example of the opening line.",
+    whyBad:
+      "This is bad because it gives no context, genre, length, or tone. The AI has no guidance.",
+  },
+  {
+    id: 7,
+    title: "Guided creative prompt",
+    prompt:
+      "Write a 3-paragraph sci-fi story set on Mars for high school students, using a hopeful tone and ending with a surprising but positive twist.",
+    isGood: true,
+    whyGood:
+      "This is good because it sets genre, audience, length, tone, and a clear constraint for how the story should end.",
+    whyBad:
+      "Calling this bad would ignore that it already provides rich context, structure, and style.",
+  },
+  {
+    id: 8,
+    title: "Analytical comparison, vague",
+    prompt: "Compare supervised and unsupervised learning.",
+    isGood: false,
+    whyGood:
+      "A stronger version would specify the format (table, bullets), audience level, and what aspects to compare.",
+    whyBad:
+      "This is bad because it doesn\'t say how deep to go, who the explanation is for, or what structure to use.",
+  },
+  {
+    id: 9,
+    title: "Role: coding assistant",
+    prompt:
+      "Act as a senior JavaScript developer. Review the following function for readability and performance, then suggest improvements in a bullet list with short explanations.",
+    isGood: true,
+    whyGood:
+      "This is good because it sets a role, task, and output format (bullet list with explanations).",
+    whyBad:
+      "This would only be bad if it didn\'t specify the role, task, or format, but it clearly does.",
+  },
+  {
+    id: 10,
+    title: "Problem-solving prompt, vague",
+    prompt: "Help me with math.",
+    isGood: false,
+    whyGood:
+      "A better prompt would mention the topic, level, example problems, and whether you want step-by-step solutions.",
+    whyBad:
+      "This is bad because it gives no topic, grade level, examples, or preferred format for help.",
+  },
 ];
+
+function pickRandomQuestions(count: number): Question[] {
+  const pool = [...ALL_QUESTIONS];
+  for (let i = pool.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  return pool.slice(0, count);
+}
 
 type Phase = "intro" | "quiz" | "results";
 
@@ -77,13 +138,17 @@ type Answer = {
 
 export default function Home() {
   const [phase, setPhase] = useState<Phase>("intro");
+  const [questions, setQuestions] = useState<Question[]>(() =>
+    pickRandomQuestions(5),
+  );
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<Answer[]>([]);
 
-  const current = QUESTIONS[index];
+  const current = questions[index];
   const score = answers.filter((a) => a.isCorrect).length;
 
   const startQuiz = () => {
+    setQuestions(pickRandomQuestions(5));
     setPhase("quiz");
     setIndex(0);
     setAnswers([]);
@@ -92,7 +157,7 @@ export default function Home() {
   const recordAnswer = (choice: "good" | "bad") => {
     const isCorrect = (current.isGood && choice === "good") || (!current.isGood && choice === "bad");
     setAnswers((prev) => [...prev, { questionId: current.id, choice, isCorrect }]);
-    if (index === QUESTIONS.length - 1) {
+    if (index === questions.length - 1) {
       setPhase("results");
     } else {
       setIndex((i) => i + 1);
@@ -100,6 +165,7 @@ export default function Home() {
   };
 
   const redo = () => {
+    setQuestions(pickRandomQuestions(5));
     setPhase("intro");
     setIndex(0);
     setAnswers([]);
@@ -173,7 +239,7 @@ export default function Home() {
             <div className="flex-1 flex flex-col justify-between gap-4">
               <div>
                 <p className="text-xs font-semibold tracking-wide text-violet-600 uppercase mb-2">
-                  Question {index + 1} of {QUESTIONS.length}
+                  Question {index + 1} of {questions.length}
                 </p>
                 <h2 className="text-lg font-semibold text-slate-900 mb-2">{current.title}</h2>
                 <div className="bg-white border border-violet-100 rounded-2xl p-4 text-sm text-slate-800 shadow-sm">
@@ -204,17 +270,17 @@ export default function Home() {
                   Your score
                 </p>
                 <p className="text-2xl font-bold text-slate-900">
-                  {score} / {QUESTIONS.length}
+                  {score} / {questions.length}
                 </p>
                 <p className="text-sm text-slate-600 mt-1">
-                  {score === QUESTIONS.length
+                  {score === questions.length
                     ? "Nice work  you can already spot strong prompts."
                     : "Review the explanations below to see how to sharpen your prompts."}
                 </p>
               </div>
               <div className="space-y-3 overflow-y-auto max-h-80 pr-1">
                 {answers.map((a) => {
-                  const q = QUESTIONS.find((q) => q.id === a.questionId)!;
+                  const q = questions.find((q: Question) => q.id === a.questionId)!;
                   const correctLabel = q.isGood ? "Good" : "Bad";
                   const explanation = explanationFor(q, a.choice);
                   return (
